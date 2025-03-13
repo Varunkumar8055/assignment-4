@@ -2,7 +2,7 @@
   "name": "as4",
   "type": "module",
   "scripts": {
-    "test": "tsx watch src/index.ts",
+    "test": "tsx watch src/ReminderService.ts",
     "reminder": "tsx watch src/reminder.ts",
     "rem-id": "tsx watch src/rem_id.ts"
   },

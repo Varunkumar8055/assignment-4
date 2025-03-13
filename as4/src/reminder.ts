@@ -1,35 +1,110 @@
+// filepath: c:\Users\msvar\OneDrive\Documents\developer\assignment-4\as4\src\reminder.ts
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
+import { ReminderService } from './ReminderService'
 
 const app = new Hono()
+const reminderService = new ReminderService()
 
 app.get('/', (c) => {
   return c.text('Hello Hono!')
 })
 
-// In-memory storage for reminders
-const reminders = new Map<string, any>()
-
 app.post('/reminders', async (c) => {
-  const { id, title, description, dueDate, isCompleted } = await c.req.json()
-
-  if (!id || !title || !description || !dueDate || typeof isCompleted !== 'boolean') {
-    return c.json({ error: 'Invalid request body' }, 400)
+  try {
+    const { id, title, description, dueDate, isCompleted } = await c.req.json()
+    const response = reminderService.createReminder(id, title, description, dueDate, isCompleted)
+    return c.json(response, 201)
+  } catch (error) {
+    return c.json({ error: error.message }, 400)
   }
-
-  reminders.set(id, { id, title, description, dueDate, isCompleted })
-  return c.json({ message: 'Reminder created successfully' }, 201)
 })
 
 app.get('/reminders/:id', (c) => {
-  const id = c.req.param('id')
-  const reminder = reminders.get(id)
-
-  if (!reminder) {
-    return c.json({ error: 'Reminder not found' }, 404)
+  try {
+    const id = c.req.param('id')
+    const reminder = reminderService.getReminder(id)
+    return c.json(reminder, 200)
+  } catch (error) {
+    return c.json({ error: error.message }, 404)
   }
+})
 
-  return c.json(reminder, 200)
+app.get('/reminders', (c) => {
+  try {
+    const reminders = reminderService.getAllReminders()
+    return c.json(reminders, 200)
+  } catch (error) {
+    return c.json({ error: error.message }, 404)
+  }
+})
+
+app.patch('/reminders/:id', async (c) => {
+  try {
+    const id = c.req.param('id')
+    const updates = await c.req.json()
+    const response = reminderService.updateReminder(id, updates)
+    return c.json(response, 200)
+  } catch (error) {
+    return c.json({ error: error.message }, 400)
+  }
+})
+
+app.delete('/reminders/:id', (c) => {
+  try {
+    const id = c.req.param('id')
+    const response = reminderService.deleteReminder(id)
+    return c.json(response, 200)
+  } catch (error) {
+    return c.json({ error: error.message }, 404)
+  }
+})
+
+app.post('/reminders/:id/mark-completed', (c) => {
+  try {
+    const id = c.req.param('id')
+    const response = reminderService.markCompleted(id)
+    return c.json(response, 200)
+  } catch (error) {
+    return c.json({ error: error.message }, 404)
+  }
+})
+
+app.post('/reminders/:id/unmark-completed', (c) => {
+  try {
+    const id = c.req.param('id')
+    const response = reminderService.unmarkCompleted(id)
+    return c.json(response, 200)
+  } catch (error) {
+    return c.json({ error: error.message }, 404)
+  }
+})
+
+app.get('/reminders/completed', (c) => {
+  try {
+    const reminders = reminderService.getCompletedReminders()
+    return c.json(reminders, 200)
+  } catch (error) {
+    return c.json({ error: error.message }, 404)
+  }
+})
+
+app.get('/reminders/not-completed', (c) => {
+  try {
+    const reminders = reminderService.getNotCompletedReminders()
+    return c.json(reminders, 200)
+  } catch (error) {
+    return c.json({ error: error.message }, 404)
+  }
+})
+
+app.get('/reminders/due-today', (c) => {
+  try {
+    const reminders = reminderService.getDueTodayReminders()
+    return c.json(reminders, 200)
+  } catch (error) {
+    return c.json({ error: error.message }, 404)
+  }
 })
 
 serve({
