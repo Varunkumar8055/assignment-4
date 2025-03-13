@@ -1,6 +1,6 @@
 // filepath: c:\Users\msvar\OneDrive\Documents\developer\assignment-4\as4\src\ReminderService.ts
 class ReminderService {
-   reminders = new Map<string, any>();
+  private reminders = new Map<string, any>();
 
   createReminder(
     id: string,
